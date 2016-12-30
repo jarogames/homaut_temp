@@ -61,20 +61,26 @@ INTERACTIVE=0
 #print('Number of arguments:', len(sys.argv), 'arguments.')
 print( 'Argument List:', str(sys.argv))
 one_day = datetime.timedelta(hours=24)
+one_dayp = datetime.timedelta(hours=48)
 if (len(sys.argv)>1):
 	if ( sys.argv[1] == 'twoweeks'):
-		one_day = datetime.timedelta(hours=168*2)
+		one_day = datetime.timedelta(hours=168*2)	
+		one_dayp=datetime.timedelta(hours=168*2+24)
 		INTERACTIVE=1
 	if ( sys.argv[1] == 'week'):
 		one_day = datetime.timedelta(hours=168)
+		one_dayp = datetime.timedelta(hours=168+24)
 		INTERACTIVE=1
 	if ( sys.argv[1] == 'day'):
 		one_day = datetime.timedelta(hours=24)
+		one_dayp = datetime.timedelta(hours=48)
 		INTERACTIVE=1
 
 
 print('i... Interval =  :', one_day)
 week = today - one_day
+weekp= today-one_dayp
+
 realweek = today - datetime.timedelta(hours=168)
 yesterday=today - one_day
 tommorow=today + one_day
@@ -145,7 +151,9 @@ config = {
 }
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
-query =("SELECT * FROM "+table+"  ORDER BY t DESC LIMIT 1")
+#query =("SELECT * FROM "+table+"  ORDER BY t DESC LIMIT 1")
+query=("SELECT * FROM "+table+" WHERE t > '"+str(weekp)+"'  ORDER BY t DESC")
+
 print(query)
 cursor.execute(query)
 listf=np.array( list([i for i in cursor]) )
@@ -229,57 +237,41 @@ plt.plot( df.t, DEWP34 ,'k--', linewidth=2)
 #plt.plot( df.t, df.f ,'c.-')
 #plt.plot( df.t, df.g ,'m.-', label='topeni')
 plt.plot( df.t, df.h ,'g.-')
-## i want  positive c-a  or  zero:   heat flow->out
-
-#ax.axvspan( min(df.t),max(df.t), ymin=dff.b[0], ymax=dff.a[0], alpha=0.5, color='red')
-
-#df['forecastday']=dff.a[0]
-#plt.plot( df.t, df.forecastday , 'r:',  linewidth=5 )
-#df['forecastnight']=dff.b[0]
-#plt.plot( df.t, df.forecastnight , 'r:',  linewidth=5 )
-#ax.fill_between(df.t, df.forecastnight, df.forecastday, facecolor='blue', alpha=0.5)
-
-#l = plt.axhline(y=dff.a[0], linewidth=1, color='r')
-#l = plt.axhline(y=dff.b[0], linewidth=1, color='r')
-#dxmin=date.today()*mdates.datestr2num(['10/27/2011', '11/2/2011'])
-#no p = plt.axhspan( dff.b[0], dff.a[0],xmax=datetime.datetime.strptime(today.strftime("%Y-%m-%d %H:%M:%S"),'%Y-%m-%d %H:%M:%S'),facecolor='red', alpha=0.1)
-#no optupt p = plt.axhspan( dff.b[0], dff.a[0],xmin=yesterday.strftime("%d-%m-%Y %H:%M:%S"),xmax=today.strftime("%d-%m-%Y %H:%M:%S"),facecolor='red', alpha=0.1)
 
 ############ my way to span datetimes :
 xmin, xmax = plt.gca().get_xlim()
 
-#x1=datetime.datetime.strptime(today.strftime("%Y-%m-%d %H:%M:%S"), '%Y-%m-%d %H:%M:%S' ).toordinal()
-#x2=datetime.datetime.strptime(tommorow.strftime("%Y-%m-%d %H:%M:%S"), '%Y-%m-%d %H:%M:%S' ).toordinal()
-#x2=mdates.datestr2num(today.strftime("%d/%m/%Y %H:%M:%S")) 
-#print(xmin, ' -  ',x1,x2, '  -  ',xmax)
-#these are some 736000.000
-#x1,x2=([x1,x2]-xmin)/(xmax-xmin)
-#x2=(x2-xmin)/(xmax-xmin)
-#dff.t[0]
-###dfftime=datetime.datetime.fromtimestamp(  float(dff.t[0])  )
-dffrepl=dff.t[0].replace(hour=5, minute=30)  #not necessary
-#dffrepl=dfftime.replace(hour=0, minute=0)
-#print(xmin, ' -  ',x1,x2, '  -  ',xmax,' time=', dff.t[0],'replaced:',dffrepl)
-x1=datetime.datetime.strptime(dffrepl.strftime("%Y-%m-%d %H:%M:%S"), '%Y-%m-%d %H:%M:%S' ).toordinal()+(3600*5)/24/3600
+#dffrepl=dff.t[0].replace(hour=5, minute=30)  #not necessary
+#x1=datetime.datetime.strptime(dffrepl.strftime("%Y-%m-%d %H:%M:%S"), '%Y-%m-%d %H:%M:%S' ).toordinal()+(3600*5)/24/3600
 # .timestamp() IS unix seconds....
-x2=datetime.datetime.strptime(dffrepl.strftime("%Y-%m-%d %H:%M:%S"), '%Y-%m-%d %H:%M:%S' ).toordinal()+3600*23.9/24/3600
+#x2=datetime.datetime.strptime(dffrepl.strftime("%Y-%m-%d %H:%M:%S"), '%Y-%m-%d %H:%M:%S' ).toordinal()+3600*23.9/24/3600
 
-print(xmin, ' -  ',x1,x2, '  -  ',xmax,' time=', dff.t[0],'replaced:',dffrepl)
-x1,x2=([x1,x2]-xmin)/(xmax-xmin)
-print(xmin, ' -  ',x1,x2, '  -  ',xmax,' time=', dff.t[0],'replaced:',dffrepl)
-time.sleep( debugsleep )
+import matplotlib.dates as dt
 
-#p = plt.axhspan( dff.b[0], dff.a[0], xmin=0.01,xmax=0.99,  facecolor='red', alpha=0.1)
-#p = plt.axhspan( dff.b[0], dff.a[0], xmin=x1,xmax=x2, facecolor='r', alpha=0.05)
-#p = plt.axhspan( dff.b[0], dff.c[0], xmin=x1,xmax=x2, facecolor='r', alpha=0.05)
-p = plt.axhspan( dff.b[0], dff.a[0], xmin=x1,xmax=x2, facecolor='r', alpha=0.1)
-p = plt.axhspan( dff.b[0], dff.c[0], xmin=x1+1,xmax=x2+1, facecolor='r', alpha=0.1)
+for i in range(0, len(dff.index) ):
+	qqq= pd.to_datetime( dff.t[i] )
+#	qqq= dff.t[i].to_pydatetime()
+	x1= dt.date2num(  qqq  )
+	x2= x1+0.99
+	print(i,'x1,x2',x1,x2)
+	x1,x2=([x1,x2]-xmin)/(xmax-xmin)
+	p = plt.axhspan( dff.b[i], dff.a[i], xmin=x1,xmax=x2, facecolor='r', alpha=0.1)
+	#p = plt.axhspan( dff.b[0], dff.c[0], xmin=x1+1,xmax=x2, facecolor='r', alpha=0.1)
+	plt.axhline(y=dff.a[i], xmin=x1,xmax=x2, linewidth=1, color='r')
+	plt.axhline(y=dff.b[i], xmin=x1,xmax=x2, linewidth=1, color='r')
 
-plt.axhline(y=dff.a[0], xmin=x1, linewidth=1, color='r')
-plt.axhline(y=dff.b[0], xmin=x1, linewidth=1, color='r')
-#print('df + FORECAST==============================:')
-#print(df)
-#time.sleep(5)
+#print(xmin, ' -  ',x1,x2, '  -  ',xmax,' time=', dff.t[0],'replaced:',dffrepl)
+#x1,x2=([x1,x2]-xmin)/(xmax-xmin)
+#print(xmin, ' -  ',x1,x2, '  -  ',xmax,' time=', dff.t[0],'replaced:',dffrepl)
+#time.sleep( debugsleep )
+
+#p = plt.axhspan( dff.b[0], dff.a[0], xmin=x1,xmax=x2, facecolor='r', alpha=0.1)
+#p = plt.axhspan( dff.b[0], dff.c[0], xmin=x1+1,xmax=x2+1, facecolor='r', alpha=0.1)
+#plt.axhline(y=dff.a[0], xmin=x1, linewidth=1, color='r')
+#plt.axhline(y=dff.b[0], xmin=x1, linewidth=1, color='r')
+##print('df + FORECAST==============================:')
+##print(df)
+##time.sleep(5)
 
 plt.grid(True)
 plt.gcf().autofmt_xdate()
@@ -315,9 +307,12 @@ flowavg=sum( list(flow) )/float(len(  list(flow)) )
 #df['flowavg']=flowavg  # I Create new pandas column like this
 print('FLOW...avg = %.2f W/m2/const' %   flowavg )
 
-plt.plot( df.t, flow ,'y.-')
-#plt.plot( df.t, df.flowavg ,'y:', linewidth=5  )
-p = plt.axhspan( 0, flowavg , facecolor='y', alpha=0.1)
+##### YELLOW DTEMP
+#plt.plot( df.t, flow ,'y.-')
+####plt.plot( df.t, df.flowavg ,'y:', linewidth=5  )
+#### YELLOW LINE
+#p = plt.axhspan( 0, flowavg , facecolor='y', alpha=0.1)
+p = plt.axhline(y=flowavg,  linewidth=2, color='y')
 
 
 plt.grid(True)
